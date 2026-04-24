@@ -9,17 +9,19 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up(): void
-    {
-        Schema::table('usuarios', function (Blueprint $table) {
-            $table->timestamps(); 
+    public function up(): void {
+        Schema::table('listas', function (Blueprint $table) {
+            $table->timestamp('deleted_at')->nullable();
         });
     }
 
+    /**
+     * Reverse the migrations.
+     */
     public function down(): void
     {
-        Schema::table('usuarios', function (Blueprint $table) {
-            $table->dropTimestamps();
+        Schema::table('listas', function (Blueprint $table) {
+            //
         });
     }
 };
