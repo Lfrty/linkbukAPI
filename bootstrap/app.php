@@ -8,50 +8,32 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
         web: __DIR__.'/../routes/web.php',
         api: __DIR__.'/../routes/api.php',
-        commands: __DIR__.'/../routes/console.php',
+        commands: __DIR__.'/../routes/console.php',        
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
         //
     })
-     ->withExceptions(function (Exceptions $exceptions) {
+     ->withExceptions(function (Exceptions $exceptions): void {
+        $exceptions->render(function (\Throwable $e, Request $request) {
 
-        $exceptions->render(function (Throwable $e, $request) {
-
-            // Si es API (JSON)
-            if ($request->expectsJson()) {
-
-                $status = $e instanceof HttpExceptionInterface
-                    ? $e->getStatusCode()
-                    : 500;
-
-                $mensajes = [
-                    404 => 'Recurso no encontrado',
-                    403 => 'No tienes permisos para acceder a esto',
-                    500 => 'Error interno del servidor',
-                ];
-
-                return response()->json([
-                    'ok' => false,
-                    'error' => $mensajes[$status] ?? 'Error inesperado',
-                ], $status);
+            if (!$request->expectsJson()) {
+                return null;
             }
 
-            // Web normal (HTML)
-            $status = $e instanceof HttpExceptionInterface
+            $status = method_exists($e, 'getStatusCode')
                 ? $e->getStatusCode()
                 : 500;
 
-            return response()->view('errors.custom', [
-                'mensaje' => match ($status) {
-                    404 => 'Lo que buscas no existe.',
-                    403 => 'No tienes permiso para ver esto.',
-                    500 => 'Algo explotó dentro del servidor.',
-                    default => 'Error inesperado.',
-                },
-                'codigo' => $status
+            return response()->json([
+                'ok' => false,
+                'error' => match ($status) {
+                    404 => 'Recurso no encontrado',
+                    403 => 'No tienes permisos',
+                    401 => 'No autenticado',
+                    default => 'Error interno del servidor',
+                }
             ], $status);
         });
-
     })
     ->create();
