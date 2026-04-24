@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller {
     
+    // Crear Usuario
     public function registrar(Request $request) {
         try {
             $request->validate([
@@ -44,5 +45,42 @@ class AuthController extends Controller {
                 'errors' => $e->errors()
             ], 422);
         }
+    }
+
+    //Login usuario
+    public function login(Request $request)
+    {
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
+
+        if (!Auth::attempt($credentials)) {
+            return response()->json([
+                'message' => 'Credenciales incorrectas'
+            ], 401);
+        }
+
+        $user = $request->user();
+
+        // Elimina tokens anteriores
+        $user->tokens()->delete();
+
+        $token = $user->createToken('api-token')->plainTextToken;
+
+        return response()->json([
+            'user' => $user,
+            'token' => $token
+        ]);
+    }
+
+    // Cerrar sesión
+    public function logout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Logout correcto'
+        ]);
     }
 }
