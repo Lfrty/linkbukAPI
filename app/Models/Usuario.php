@@ -9,7 +9,7 @@ use Illuminate\Notifications\Notifiable;
 use App\Models\Rol;
 
 class Usuario extends Authenticatable {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasApiTokens;
 
     // Nombre tablac
     protected $table = 'usuarios';
