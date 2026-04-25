@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ListaController;
 
 Route::get('/test', function () {
     return response()->json(['ok' => true]);

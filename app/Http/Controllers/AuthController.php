@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller {
     
@@ -69,7 +70,15 @@ class AuthController extends Controller {
         $token = $user->createToken('api-token')->plainTextToken;
 
         return response()->json([
-            'user' => $user,
+            'user' => [
+                    'id' => $user->id,
+                    'nombre' => $user->nombre,
+                    'email' => $user->email,
+                    'biografia' => $user-> biografia,
+                    'ubicacion' => $user-> ubicacion,
+                    'foto_perfil' => $user-> foto_perfil,
+                    'permite_desconocidos' => $user-> permite_desconocidos,
+                ],
             'token' => $token
         ]);
     }
