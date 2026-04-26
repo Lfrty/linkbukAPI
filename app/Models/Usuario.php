@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
-use App\Models\Rol;
 
 class Usuario extends Authenticatable {
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasApiTokens;
+    use HasFactory;
+    use Notifiable;
 
     // Nombre tablac
     protected $table = 'usuarios';
@@ -28,23 +29,22 @@ class Usuario extends Authenticatable {
 
     // Contraseña protegida al exportar
     protected $hidden = [
-        'password'
-    ];    
+        'password',
+    ];
 
     // Por defecto se crea a true
     protected $attributes = [
         'permite_desconocidos' => true,
-        'biografia' => "-"
+        'biografia' => '-',
     ];
 
     // COnvierte a bool
     protected $casts = [
-        'permite_desconocidos' => 'boolean'
+        'permite_desconocidos' => 'boolean',
     ];
 
     // RELACIÓN Roles
-    public function rol()
-    {
+    public function rol() {
         return $this->belongsTo(Rol::class, 'rol_id');
     }
 

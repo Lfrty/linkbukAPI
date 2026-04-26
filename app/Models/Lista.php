@@ -4,8 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Lista extends Model
-{
+class Lista extends Model {
     use HasFactory;
 
     protected $table = 'listas';
@@ -20,9 +19,7 @@ class Lista extends Model
         'es_default' => 'boolean',
     ];
 
-    // 🔗 Relación con usuario (si tienes User model)
-    public function usuario()
-    {
+    public function usuario() {
         return $this->belongsTo(User::class, 'usuario_id');
     }
 }

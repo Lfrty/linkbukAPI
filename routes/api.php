@@ -1,8 +1,9 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ListaController;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/test', function () {
     return response()->json(['ok' => true]);
@@ -33,7 +34,6 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::post('/listas', [ListaController::class, 'store']);
 
 Route::delete('/listas/{id}', [ListaController::class, 'destroy']); // soft delete
-
 
 Route::delete('/listas/{id}/force', [ListaController::class, 'forceDelete']);
 Route::post('/listas/{id}/restore', [ListaController::class, 'restore']);

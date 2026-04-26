@@ -4,11 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Usuario;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller {
-    
     // Crear Usuario
     public function registrar(Request $request) {
         try {
@@ -35,7 +34,7 @@ class AuthController extends Controller {
 
             return response()->json([
                 'message' => 'Usuario creado correctamente',
-                'user' => $usuario
+                'user' => $usuario,
             ], 201);
 
         } catch (ValidationException $e) {
@@ -43,22 +42,21 @@ class AuthController extends Controller {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Errores de validación',
-                'errors' => $e->errors()
+                'errors' => $e->errors(),
             ], 422);
         }
     }
 
-    //Login usuario
-    public function login(Request $request)
-    {
+    // Login usuario
+    public function login(Request $request) {
         $credentials = $request->validate([
             'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
-        if (!Auth::attempt($credentials)) {
+        if (! Auth::attempt($credentials)) {
             return response()->json([
-                'message' => 'Credenciales incorrectas'
+                'message' => 'Credenciales incorrectas',
             ], 401);
         }
 
@@ -71,25 +69,24 @@ class AuthController extends Controller {
 
         return response()->json([
             'user' => [
-                    'id' => $user->id,
-                    'nombre' => $user->nombre,
-                    'email' => $user->email,
-                    'biografia' => $user-> biografia,
-                    'ubicacion' => $user-> ubicacion,
-                    'foto_perfil' => $user-> foto_perfil,
-                    'permite_desconocidos' => $user-> permite_desconocidos,
-                ],
-            'token' => $token
+                'id' => $user->id,
+                'nombre' => $user->nombre,
+                'email' => $user->email,
+                'biografia' => $user->biografia,
+                'ubicacion' => $user->ubicacion,
+                'foto_perfil' => $user->foto_perfil,
+                'permite_desconocidos' => $user->permite_desconocidos,
+            ],
+            'token' => $token,
         ]);
     }
 
     // Cerrar sesión
-    public function logout(Request $request)
-    {
-        $request->user()->currentAccessToken()->delete();
+    public function logout(Request $request) {
+        $request->user()->tokens()?->delete();
 
         return response()->json([
-            'message' => 'Logout correcto'
+            'message' => 'Logout correcto',
         ]);
     }
 }
