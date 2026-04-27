@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'book_archive' => [
+        'url' => env('BOOK_ARCHIVE_URL'),
+    ],
+
 ];

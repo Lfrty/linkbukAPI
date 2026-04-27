@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ListaController;
+use App\Http\Controllers\LibroController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +17,9 @@ Route::post('/registrar', [AuthController::class, 'registrar']);
 
 // Login
 Route::post('/login', [AuthController::class, 'login']);
+
+// Buscar libro
+Route::get('/libros/search', [LibroController::class, 'search']);
 
 // Opciones logueado
 Route::middleware('auth:sanctum')->group(function () {
