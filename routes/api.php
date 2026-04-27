@@ -26,8 +26,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // Perfil
     Route::get('/user', fn (Request $request) => $request->user());
 
-    // Ver Listas
-    Route::get('/listas', [ListaController::class, 'index']);
+    // GET Lista usuario
+    Route::get('/lista', function (Request $request) {
+        return $request->user()->listas;
+    });
 
 });
 

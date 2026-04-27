@@ -48,6 +48,11 @@ class Usuario extends Authenticatable {
         return $this->belongsTo(Rol::class, 'rol_id');
     }
 
+    // Relaicón listas
+    public function listas() {
+        return $this->hasMany(Lista::class, 'usuario_id');
+    }
+
     protected function password(): Attribute {
         return Attribute::make(
             set: fn ($value) => bcrypt($value),

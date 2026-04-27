@@ -9,8 +9,11 @@ return new class () extends Migration {
      * Run the migrations.
      */
     public function up(): void {
-        Schema::table('listas', function (Blueprint $table) {
-            $table->timestamp('deleted_at')->nullable();
+        Schema::create('lista_libro', function (Blueprint $table) {
+            $table->foreignId('lista_id')->constrained()->cascadeOnDelete();
+            $table->foreignId('libro_id')->constrained()->cascadeOnDelete();
+
+            $table->primary(['lista_id', 'libro_id']);
         });
     }
 
@@ -18,8 +21,6 @@ return new class () extends Migration {
      * Reverse the migrations.
      */
     public function down(): void {
-        Schema::table('listas', function (Blueprint $table) {
-            //
-        });
+        Schema::dropIfExists('lista_libro');
     }
 };
