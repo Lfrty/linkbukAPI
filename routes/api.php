@@ -21,6 +21,9 @@ Route::post('/login', [AuthController::class, 'login']);
 // Buscar libro
 Route::get('/libros/search', [LibroController::class, 'search']);
 
+// Get Work
+Route::get('/works/{workKey}', [LibroController::class, 'show']);
+
 // Opciones logueado
 Route::middleware('auth:sanctum')->group(function () {
 
