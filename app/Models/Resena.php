@@ -9,21 +9,19 @@ class Resena extends Model {
 
     protected $fillable = [
         'usuario_id',
-        'isbn',
+        'libro_id',
         'puntuacion',
         'comentario',
-        'fecha',
     ];
 
-    public $timestamps = false;
+    // Como sí tienes created_at y updated_at en la tabla:
+    public $timestamps = true;
 
-    // Relacion con usuario
     public function usuario() {
         return $this->belongsTo(Usuario::class, 'usuario_id');
     }
 
-    // Relacion con libro
     public function libro() {
-        return $this->belongsTo(Libro::class, 'isbn', 'isbn');
+        return $this->belongsTo(Libro::class, 'libro_id');
     }
 }

@@ -6,9 +6,16 @@ use Illuminate\Http\Request;
 
 class ListaController extends Controller {
     public function index() {
+        
+        if (auth()->user()->esAdmin() || auth()->user()->esSupervisor()) {
+            $data = Lista::all();
+        } else {
+            $data = Lista::where('usuario_id', auth()->id())->get();
+        }
+
         return response()->json([
             'ok' => true,
-            'data' => Lista::all(),
+            'data' => $data,
         ]);
     }
 
@@ -21,7 +28,7 @@ class ListaController extends Controller {
         ]);
 
         $lista = Lista::create([
-            'usuario_id' => $request->usuario_id,
+            'usuario_id' => auth()->id(),
             'nombre' => $request->nombre,
             'es_default' => $request->es_default ?? false,
         ]);
@@ -36,11 +43,18 @@ class ListaController extends Controller {
     public function destroy($id) {
         $lista = Lista::find($id);
 
-        if (! $lista) {
+        if (!$lista) {
             return response()->json([
                 'ok' => false,
                 'error' => 'Lista no encontrada',
             ], 404);
+        }
+
+        if ($lista->es_default) {
+            return response()->json([
+                'ok' => false,
+                'error' => 'No puedes eliminar una lista del sistema',
+            ], 403);
         }
 
         $lista->delete(); // Soft delete
@@ -86,6 +100,21 @@ class ListaController extends Controller {
         return response()->json([
             'ok' => true,
             'data' => $lista,
+        ]);
+    }
+
+    // función por defecto al crear usuario
+    public function crearListasSistema($usuario) {
+        Lista::create([
+            'usuario_id' => $usuario->id,
+            'nombre' => 'Favoritos',
+            'es_default' => true,
+        ]);
+
+        Lista::create([
+            'usuario_id' => $usuario->id,
+            'nombre' => 'Leer más tarde',
+            'es_default' => true,
         ]);
     }
 }

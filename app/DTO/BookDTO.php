@@ -4,26 +4,26 @@ namespace App\DTO;
 
 class BookDTO {
     public function __construct(
-        public ?string $title,
-        public ?string $description,
-        public ?array $authors,
-        public ?int $pages,
-        public ?string $publishDate,
-        public ?int $cover,
-        public ?string $language,
+        public ?string $titulo,
+        public ?string $descripcion,
+        public ?array $autores,
+        public ?int $paginas,
+        public ?string $anyo_publicacion,
+        public ?int $portada,
+        public ?string $idioma,
         public array $subjects = []
     ) {
     }
 
     public function toArray(): array {
         return [
-            'title' => $this->title,
-            'description' => $this->description,
-            'authors' => $this->authors,
-            'pages' => $this->pages,
-            'publish_date' => $this->publishDate,
-            'cover' => $this->cover,
-            'language' => $this->language,
+            'titulo' => $this->titulo,
+            'descripcion' => $this->descripcion,
+            'autores' => $this->autores,
+            'paginas' => $this->paginas,
+            'anyo_publicacion' => $this->anyo_publicacion,
+            'portada' => $this->portada,
+            'idioma' => $this->idioma,
             'subjects' => $this->subjects,
         ];
     }

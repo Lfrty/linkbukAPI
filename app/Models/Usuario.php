@@ -48,9 +48,19 @@ class Usuario extends Authenticatable {
         return $this->belongsTo(Rol::class, 'rol_id');
     }
 
-    // Relaicón listas
+    // Relación listas
     public function listas() {
         return $this->hasMany(Lista::class, 'usuario_id');
+    }
+
+    //Comprobar rol Admin
+    public function esAdmin() {
+        return $this->rol_id === 1;
+    }
+
+    //Comprobar rol Supervisor
+    public function esSupervisor() {
+        return $this->rol_id === 2;
     }
 
     protected function password(): Attribute {

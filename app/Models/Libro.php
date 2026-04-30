@@ -14,12 +14,11 @@ class Libro extends Model {
     protected $keyType = 'string';
 
     protected $fillable = [
-        'isbn',
-        'titulo',
-        'autor',
-        'paginas',
-        'fecha_publicacion',
-        'editorial',
-        'portada_url',
-    ];
+    'work_key',
+    'titulo',
+    'autor',
+    'anyo_publicacion',
+    'descripcion',
+    'portada',
+];
 }
