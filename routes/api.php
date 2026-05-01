@@ -13,10 +13,10 @@ Route::get('/test', function () {
 // Opciones Usuario
 
 // Registro
-Route::post('/registrar', [AuthController::class, 'registrar']);
+Route::post('/auth/registrar', [AuthController::class, 'registrar']);
 
 // Login
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('/auth/login', [AuthController::class, 'login']);
 
 // Buscar libro
 Route::get('/libros/search', [LibroController::class, 'search']);
@@ -28,7 +28,7 @@ Route::get('/works/{workKey}', [LibroController::class, 'show']);
 Route::middleware('auth:sanctum')->group(function () {
 
     // Cerrar sesión
-    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::post('/auth/logout', [AuthController::class, 'logout']);
 
     // Perfil
     Route::get('/user', fn (Request $request) => $request->user());
@@ -38,11 +38,17 @@ Route::middleware('auth:sanctum')->group(function () {
         return $request->user()->listas;
     });
 
+    /**
+     * LISTAS
+     */
+
+
+    Route::post('/listas', [ListaController::class, 'store']);
+
+    Route::delete('/listas/{id}', [ListaController::class, 'destroy']); // soft delete
+
+    Route::delete('/listas/{id}/force', [ListaController::class, 'forceDelete']);
+
+    Route::post('/listas/{id}/restore', [ListaController::class, 'restore']);
+
 });
-
-Route::post('/listas', [ListaController::class, 'store']);
-
-Route::delete('/listas/{id}', [ListaController::class, 'destroy']); // soft delete
-
-Route::delete('/listas/{id}/force', [ListaController::class, 'forceDelete']);
-Route::post('/listas/{id}/restore', [ListaController::class, 'restore']);
