@@ -3,20 +3,45 @@
 namespace App\Services;
 
 class EditionResolver {
+    // De todas las ediciones resuelve la más completa
     public function resolveBest(array $editions): ?array {
         $collection = collect($editions);
 
-        // 1. intentar español válido
-        if ($spanish = $this->findValidByLanguage($collection, 'spa')) {
-            return $spanish;
+        // Intentamos buscar la mejor en español primero
+        $best = $this->rankByLanguage($collection, 'spa');
+
+        // Si no hay nada en español, intentamos en inglés
+        if (!$best) {
+            $best = $this->rankByLanguage($collection, 'eng');
         }
 
-        // 2. inglés válido
-        if ($english = $this->findValidByLanguage($collection, 'eng')) {
-            return $english;
+        // Si sigue sin haber nada, devolvemos la primera disponible
+        return $best ?? $collection->first();
+    }
+
+    private function rankByLanguage($collection, string $lang): ?array {
+        $filtered = $collection->filter(function ($ed) use ($lang) {
+            $langs = collect($ed['languages'] ?? [])->pluck('key')->toArray();
+            return in_array("/languages/$lang", $langs);
+        });
+
+        if ($filtered->isEmpty()) {
+            return null;
         }
 
-        return $collection->first();
+        return $filtered->sortByDesc(function ($ed) {
+            $score = 0;
+            if (!empty($ed['description'])) {
+                $score += 10;
+            }
+            if (!empty($ed['covers'])) {
+                $score += 5;
+            }
+            if (!empty($ed['number_of_pages'])) {
+                $score += 2;
+            }
+            return $score;
+        })->first();
     }
 
     public function resolveTitle($work, $edition) {
@@ -71,21 +96,18 @@ class EditionResolver {
         });
     }
 
+    // Busco resultados reales y la que más se acerque
     public function resolvePages(array $editions, ?array $bestEdition): ?int {
-        if (!empty($bestEdition['number_of_pages'])) {
+        // Si la mejor edición ya tiene páginas reales (> 5), nos las quedamos
+        if (!empty($bestEdition['number_of_pages']) && $bestEdition['number_of_pages'] > 5) {
             return (int) $bestEdition['number_of_pages'];
         }
 
-        // Busca la edición con más páginas (más probable completa)
         $best = collect($editions)
-            ->filter(fn ($ed) => !empty($ed['number_of_pages']))
-            ->sortByDesc('number_of_pages')
-            ->first();
+            ->map(fn ($ed) => (int) ($ed['number_of_pages'] ?? 0))
+            ->filter(fn ($p) => $p > 5 && $p < 5000)
+            ->max();
 
-        if ($best) {
-            return (int) $best['number_of_pages'];
-        }
-
-        return null;
+        return $best ?: null;
     }
 }

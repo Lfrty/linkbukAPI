@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -23,24 +24,28 @@ class Usuario extends Authenticatable {
         'biografia',
         'ubicacion',
         'foto_perfil',
-        'permite_desconocidos',
+        'permitir_desconocidos',
         'rol_id',
     ];
 
     // Contraseña protegida al exportar
     protected $hidden = [
         'password',
+        'remember_token',
+        'created_at',
+        'updated_at'
     ];
 
     // Por defecto se crea a true
     protected $attributes = [
-        'permite_desconocidos' => true,
+        'permitir_desconocidos' => true,
         'biografia' => '-',
     ];
 
     // COnvierte a bool
     protected $casts = [
-        'permite_desconocidos' => 'boolean',
+        'permitir_desconocidos' => 'boolean',
+        'password' => 'hashed' //Aquí la cifra
     ];
 
     // RELACIÓN Roles
@@ -53,6 +58,11 @@ class Usuario extends Authenticatable {
         return $this->hasMany(Lista::class, 'usuario_id');
     }
 
+    // Devuelve la biblioteca del usuario
+    public function biblioteca(): HasOne {
+        return $this->hasOne(Biblioteca::class);
+    }
+
     //Comprobar rol Admin
     public function esAdmin() {
         return $this->rol_id === 1;
@@ -61,11 +71,5 @@ class Usuario extends Authenticatable {
     //Comprobar rol Supervisor
     public function esSupervisor() {
         return $this->rol_id === 2;
-    }
-
-    protected function password(): Attribute {
-        return Attribute::make(
-            set: fn ($value) => bcrypt($value),
-        );
     }
 }

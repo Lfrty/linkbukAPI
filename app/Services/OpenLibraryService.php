@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Client\Pool;
 
 class OpenLibraryService {
     private string $baseUrl;
@@ -16,13 +17,16 @@ class OpenLibraryService {
 
     // Buscar por título
     public function search(string $query, int $limit = 10) {
-        $response = Http::get($this->baseUrl . self::ENDPOINT_SEARCH, [
+        $response = Http::timeout(5) // Máximo 5 segundos esperando
+        ->retry(2, 100)        // Si falla, reintenta 2 veces con 100ms de margen
+        ->get($this->baseUrl . self::ENDPOINT_SEARCH, [
             'q' => $query,
             'limit' => $limit,
         ]);
 
         if (!$response->successful()) {
-            return [];
+            \Log::error("Error en OpenLibraryService: " . $response->status());
+            return null;
         }
 
         return $response->json();
@@ -32,12 +36,13 @@ class OpenLibraryService {
     public function getWork(string $workKey) {
         // Por si manda /works
 
-        $workKey = str_replace('/works/', '', $workKey);
+        $workKey = $this->cleanKey($workKey);
 
         $response = Http::get($this->baseUrl . self::ENDPOINT_WORKS . $workKey . '.json');
 
         if (!$response->successful()) {
-            return [];
+            \Log::error("Error en OpenLibraryService: " . $response->status());
+            return null;
         }
 
         return $response->json();
@@ -45,10 +50,13 @@ class OpenLibraryService {
 
 
     public function getEditions(string $workKey) {
+
+        $workKey = $this->cleanKey($workKey);
         $response = Http::get($this->baseUrl . self::ENDPOINT_WORKS . $workKey . '/editions.json');
 
         if (!$response->successful()) {
-            return [];
+            \Log::error("Error en OpenLibraryService: " . $response->status());
+            return null;
         }
 
         return $response->json();
@@ -80,15 +88,35 @@ class OpenLibraryService {
 
     public function resolveAuthors(array $work): array {
         $keys = $this->extractAuthorKeys($work);
+        $authors = [];
+        $keysToFetch = [];
 
-        return collect($keys)
-            ->map(function ($key) {
-                $author = $this->getAuthor($key);
-                return $author['name'] ?? null;
-            })
-            ->filter()
-            ->values()
-            ->toArray();
+        // Primero busco en caché
+        foreach ($keys as $key) {
+            if ($cached = cache()->get("author_{$key}")) {
+                $authors[] = $cached['name'];
+            } else {
+                $keysToFetch[] = $key;
+            }
+        }
+
+        // Pido pool de lo que NO está en caché
+        if (!empty($keysToFetch)) {
+            $responses = Http::pool(
+                fn (Pool $pool) =>
+                collect($keysToFetch)->map(fn ($key) => $pool->as($key)->get($this->baseUrl . $key . '.json'))
+            );
+
+            foreach ($responses as $key => $res) {
+                if ($res->successful()) {
+                    $data = $res->json();
+                    cache()->put("author_{$key}", $data, 86400);
+                    $authors[] = $data['name'] ?? null;
+                }
+            }
+        }
+
+        return array_filter($authors);
     }
 
     public function resolvePublishDate(array $editions): ?string {
@@ -100,7 +128,10 @@ class OpenLibraryService {
     }
 
     private function getAuthor(string $authorKey): ?array {
-        return Http::get($this->baseUrl . $authorKey . '.json')->json();
+        // Cacheo los autores por posibles búsquedas repetidas
+        return cache()->remember("author_{$authorKey}", 86400, function () use ($authorKey) {
+            return Http::get($this->baseUrl . $authorKey . '.json')->json();
+        });
     }
 
     private function extractAuthorKeys(array $work): array {
@@ -108,6 +139,10 @@ class OpenLibraryService {
             ->pluck('author.key')
             ->filter()
             ->toArray();
+    }
+
+    private function cleanKey(string $key): string {
+        return str_replace('/works/', '', $key);
     }
 
 }

@@ -2,119 +2,90 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Lista;
 use Illuminate\Http\Request;
 
 class ListaController extends Controller {
     public function index() {
-        
-        if (auth()->user()->esAdmin() || auth()->user()->esSupervisor()) {
+        $user = auth()->user();
+
+        // Simplificamos la lógica de roles
+        if ($user->esAdmin() || $user->esSupervisor()) {
             $data = Lista::all();
         } else {
-            $data = Lista::where('usuario_id', auth()->id())->get();
+            $data = Lista::where('usuario_id', $user->id)->get();
         }
 
-        return response()->json([
-            'ok' => true,
-            'data' => $data,
-        ]);
+        return $this->successResponse($data, 'Listas recuperadas correctamente');
     }
 
-    // Nueva lista
     public function store(Request $request) {
         $request->validate([
-            'usuario_id' => 'required|integer',
             'nombre' => 'required|string|max:255',
             'es_default' => 'boolean',
         ]);
 
         $lista = Lista::create([
             'usuario_id' => auth()->id(),
-            'nombre' => $request->nombre,
+            'nombre'     => $request->nombre,
             'es_default' => $request->es_default ?? false,
         ]);
 
-        return response()->json([
-            'ok' => true,
-            'data' => $lista,
-        ], 201);
+        return $this->successResponse($lista, 'Lista creada con éxito', 201);
     }
 
-    // DELETE lógico (usuario normal)
     public function destroy($id) {
         $lista = Lista::find($id);
 
         if (!$lista) {
-            return response()->json([
-                'ok' => false,
-                'error' => 'Lista no encontrada',
-            ], 404);
+            return $this->errorResponse('Lista no encontrada', 404);
         }
 
         if ($lista->es_default) {
-            return response()->json([
-                'ok' => false,
-                'error' => 'No puedes eliminar una lista del sistema',
-            ], 403);
+            return $this->errorResponse('No puedes eliminar una lista del sistema', 403);
         }
 
         $lista->delete(); // Soft delete
 
-        return response()->json([
-            'ok' => true,
-            'message' => 'Lista eliminada (lógica)',
-        ]);
+        return $this->successResponse(null, 'Lista enviada a la papelera');
     }
 
-    // DELETE (solo admin)
     public function forceDelete($id) {
         $lista = Lista::withTrashed()->find($id);
 
-        if (! $lista) {
-            return response()->json([
-                'ok' => false,
-                'error' => 'Lista no encontrada',
-            ], 404);
+        if (!$lista) {
+            return $this->errorResponse('Lista no encontrada', 404);
         }
 
         $lista->forceDelete();
 
-        return response()->json([
-            'ok' => true,
-            'message' => 'Lista eliminada definitivamente',
-        ]);
+        return $this->successResponse(null, 'Lista eliminada definitivamente');
     }
 
-    // Recuperar lista (admin)
     public function restore($id) {
         $lista = Lista::withTrashed()->find($id);
 
-        if (! $lista) {
-            return response()->json([
-                'ok' => false,
-                'error' => 'Lista no encontrada',
-            ], 404);
+        if (!$lista) {
+            return $this->errorResponse('Lista no encontrada', 404);
         }
 
         $lista->restore();
 
-        return response()->json([
-            'ok' => true,
-            'data' => $lista,
-        ]);
+        return $this->successResponse($lista, 'Lista restaurada correctamente');
     }
 
-    // función por defecto al crear usuario
+    /**
+     * Crea listas por defecto
+     */
     public function crearListasSistema($usuario) {
-        Lista::create([
-            'usuario_id' => $usuario->id,
-            'nombre' => 'Favoritos',
-            'es_default' => true,
-        ]);
+        $listas = ['Favoritos', 'Leer más tarde'];
 
-        Lista::create([
-            'usuario_id' => $usuario->id,
-            'nombre' => 'Leer más tarde',
-            'es_default' => true,
-        ]);
+        foreach ($listas as $nombre) {
+            Lista::create([
+                'usuario_id' => $usuario->id,
+                'nombre'     => $nombre,
+                'es_default' => true,
+            ]);
+        }
     }
 }

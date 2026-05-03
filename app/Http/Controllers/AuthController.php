@@ -7,17 +7,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use App\Http\Resources\UsuarioResource;
 
 class AuthController extends Controller {
     // Crear Usuario
     public function registrar(Request $request) {
         try {
             $request->validate([
-                'nombre' => 'required|string|max:255',
+                'nombre'   => 'required|string|max:25',
                 'email' => 'required|email|unique:usuarios,email',
                 'password' => 'required|min:6',
             ], [
-                'nombre.required' => 'El nombre es obligatorio',
+                'nombre.required'   => 'El nombre es obligatorio',
                 'email.required' => 'El email es obligatorio',
                 'email.email' => 'El formato del email no es válido',
                 'email.unique' => 'Este email ya está registrado',
@@ -26,25 +27,17 @@ class AuthController extends Controller {
             ]);
 
             // Crear usuario
-            $usuario = Usuario::create([
-                'nombre' => $request->nombre,
-                'email' => $request->email,
-                'password' => Hash::make($request->password),
-                'rol_id' => 2, // Usuario por defecto
+            $usuario = Usuario::create(['nombre'   => $request->nombre,
+                'email'    => $request->email,
+                'password' => $request->password, // Se cifra en el modelo
+                'rol_id' => 3, // Role de Usuario por defecto
             ]);
 
-            return response()->json([
-                'message' => 'Usuario creado correctamente',
-                'user' => $usuario,
-            ], 201);
+            return $this->successResponse(null, 'Usuario creado correctamente', 201);
 
         } catch (ValidationException $e) {
-
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Errores de validación',
-                'errors' => $e->errors(),
-            ], 422);
+            // Usamos el centralizador de errores
+            return $this->errorResponse('Errores de validación', 422, $e->errors());
         }
     }
 
@@ -55,10 +48,8 @@ class AuthController extends Controller {
             'password' => ['required'],
         ]);
 
-        if (! Auth::attempt($credentials)) {
-            return response()->json([
-                'message' => 'Credenciales incorrectas',
-            ], 401);
+        if (!Auth::attempt($credentials)) {
+            return $this->errorResponse('Credenciales incorrectas', 401);
         }
 
         $user = $request->user();
@@ -68,26 +59,36 @@ class AuthController extends Controller {
 
         $token = $user->createToken('api-token')->plainTextToken;
 
-        return response()->json([
-            'user' => [
-                'id' => $user->id,
-                'nombre' => $user->nombre,
-                'email' => $user->email,
-                'biografia' => $user->biografia,
-                'ubicacion' => $user->ubicacion,
-                'foto_perfil' => $user->foto_perfil,
-                'permite_desconocidos' => $user->permite_desconocidos,
-            ],
+        return $this->successResponse([
+            'user'  => new UsuarioResource($user),
             'token' => $token,
+        ], 'Usuario ' + $usuario->email + ' logueado');
+    }
+
+    public function edit(Request $request) {
+        $user = $request->user();
+
+        $validated = $request->validate([
+            'nombre'    => 'sometimes|string|max:25',
+            'email'     => 'sometimes|email|unique:usuarios,email,' . $user->id,
+            'biografia' => 'nullable|string|max:500',
+            'ubicacion' => 'nullable|string|max:100',
+            'permitir_desconocidos' => 'sometimes|boolean',
         ]);
+
+        $user->update($validated);
+
+        // Devolvemos el Resource. Él se encarga de quitar lo que sobra.
+        return $this->successResponse(
+            new UsuarioResource($user),
+            'Perfil actualizado'
+        );
     }
 
     // Cerrar sesión
     public function logout(Request $request) {
         $request->user()->tokens()?->delete();
 
-        return response()->json([
-            'message' => 'Logout correcto',
-        ]);
+        return $this->successResponse(null, 'Logout correcto');
     }
 }

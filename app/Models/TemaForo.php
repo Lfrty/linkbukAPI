@@ -25,4 +25,9 @@ class TemaForo extends Model {
     public function respuestas() {
         return $this->hasMany(RespuestaForo::class, 'tema_id');
     }
+
+    public function tieneAcceso(Usuario $usuario): bool {
+        // Es el autor o es un administrador
+        return $this->usuario_id === $usuario->id || $usuario->esAdmin();
+    }
 }

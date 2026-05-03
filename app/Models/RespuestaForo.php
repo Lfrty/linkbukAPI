@@ -23,4 +23,9 @@ class RespuestaForo extends Model {
     public function usuario() {
         return $this->belongsTo(Usuario::class, 'usuario_id');
     }
+
+    public function tieneAcceso(Usuario $usuario): bool {
+        // Es el autor o es un administrador
+        return $this->usuario_id === $usuario->id || $usuario->esAdmin();
+    }
 }

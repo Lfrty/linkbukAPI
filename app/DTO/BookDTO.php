@@ -8,8 +8,8 @@ class BookDTO {
         public ?string $descripcion,
         public ?array $autores,
         public ?int $paginas,
-        public ?string $anyo_publicacion,
-        public ?int $portada,
+        public ?int $anyo_publicacion,
+        public ?string $portada,
         public ?string $idioma,
         public array $subjects = []
     ) {
