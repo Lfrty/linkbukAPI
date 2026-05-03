@@ -8,10 +8,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
 use App\Http\Resources\UsuarioResource;
+use Illuminate\Support\Facades\DB;
+use App\Services\ListaService;
 
 class AuthController extends Controller {
     // Crear Usuario
-    public function registrar(Request $request) {
+    public function registrar(Request $request, ListaService $listaService) {
         try {
             $request->validate([
                 'nombre'   => 'required|string|max:25',
@@ -26,14 +28,24 @@ class AuthController extends Controller {
                 'password.min' => 'La contraseña debe tener al menos 6 caracteres',
             ]);
 
-            // Crear usuario
-            $usuario = Usuario::create(['nombre'   => $request->nombre,
-                'email'    => $request->email,
-                'password' => $request->password, // Se cifra en el modelo
-                'rol_id' => 3, // Role de Usuario por defecto
-            ]);
+            // Transacción para que se den ambos casos o ninguno
+            $usuario = DB::transaction(function () use ($request, $listaService) {
 
-            return $this->successResponse(null, 'Usuario creado correctamente', 201);
+                // Crear usuario
+                $usuario = Usuario::create(['nombre'   => $request->nombre,
+                    'email'    => $request->email,
+                    'password' => $request->password, // Se cifra en el modelo
+                    'rol_id' => 3, // Role de Usuario por defecto
+                ]);
+
+                // Crea listas por defecto
+                $listaService->crearListasNuevoUsuario($usuario->id);
+                return $usuario;
+            });
+
+
+
+            return $this->successResponse($usuario, 'Usuario creado correctamente', 201);
 
         } catch (ValidationException $e) {
             // Usamos el centralizador de errores
@@ -62,7 +74,7 @@ class AuthController extends Controller {
         return $this->successResponse([
             'user'  => new UsuarioResource($user),
             'token' => $token,
-        ], 'Usuario ' + $usuario->email + ' logueado');
+        ], 'Usuario ' . $user->email . ' logueado');
     }
 
     public function edit(Request $request) {

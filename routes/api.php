@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\ListaController;
 use App\Http\Controllers\LibroController;
 use App\Http\Controllers\BibliotecaController;
+use App\Http\Controllers\ResenasController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -45,21 +46,36 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/biblioteca', [BibliotecaController::class, 'index']);
 
+    Route::post('biblioteca/nuevo', [BibliotecaController::class, 'addLibro']);
+
     Route::post('biblioteca/estadoLibro', [BibliotecaController::class, 'updateEstado']);
 
-    Route::delete('biblioteca/eliminar', [BibliotecaController::class, 'deleteLibro']);
+    Route::delete('biblioteca', [BibliotecaController::class, 'deleteLibro']);
 
 
 
     /**
      * LISTAS
      */
-    Route::post('/listas', [ListaController::class, 'store']);
+    Route::get('/listas/all', [ListaController::class, 'index']);
+
+    Route::post('/listas/new', [ListaController::class, 'store']);
 
     Route::delete('/listas/{id}', [ListaController::class, 'destroy']); // soft delete
 
+    // Para Administracion
     Route::delete('/listas/{id}/force', [ListaController::class, 'forceDelete']);
 
     Route::post('/listas/{id}/restore', [ListaController::class, 'restore']);
+
+    /**
+     * Reseñas
+     */
+    Route::get('/resenas', [ResenasController::class, 'index']);
+
+    Route::post('/resenas/new', [ResenasController::class, 'store']);
+
+    Route::delete('/resenas/{id}', [ResenasController::class, 'destroy']); // soft delete
+
 
 });

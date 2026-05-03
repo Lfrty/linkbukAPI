@@ -58,6 +58,11 @@ class Usuario extends Authenticatable {
         return $this->hasMany(Lista::class, 'usuario_id');
     }
 
+    // Relación Reseñas
+    public function resenas() {
+        return $this->hasMany(Resena::class, 'usuario_id');
+    }
+
     // Devuelve la biblioteca del usuario
     public function biblioteca(): HasOne {
         return $this->hasOne(Biblioteca::class);

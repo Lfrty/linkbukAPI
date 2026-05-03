@@ -30,7 +30,7 @@ class BibliotecaController extends Controller {
         $user = $request->user();
 
         // Uso firstOrCreate por si el usuario no tiene biblioteca aún
-        $biblioteca = $user->biblioteca()->firstOrCreate(['user_id' => $user->id]);
+        $biblioteca = $user->biblioteca()->firstOrCreate(['usuario_id' => $user->id]);
 
         // Compruebo si ya lo tiene para no duplicar
         if ($biblioteca->libros()->where('libro_id', $request->libro_id)->exists()) {
@@ -69,10 +69,18 @@ class BibliotecaController extends Controller {
     }
 
     // Eliminar libro
-    public function deleteLibro(Request $request, $libroId) {
-        $biblioteca = $request->user()->biblioteca;
+    public function deleteLibro(Request $request) {
+        $request->validate([
+        'id' => 'required|exists:libros,id'
+    ]);
 
-        $biblioteca->libros()->detach($libroId);
+        $user = $request->user();
+
+        if (!$user->biblioteca) {
+            return $this->errorResponse('Biblioteca no encontrada', 404);
+        }
+
+        $request->user()->biblioteca->libros()->detach($request->id);
 
         return $this->successResponse(null, 'Libro eliminado de tu biblioteca');
     }

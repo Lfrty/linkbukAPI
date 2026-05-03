@@ -3,89 +3,68 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lista;
+use App\Services\ListaService; // 🛠️ Importamos el nuevo servicio
 use Illuminate\Http\Request;
 
 class ListaController extends Controller {
+    protected $listaService;
+
+    // Para llamar al servicio de listas
+    public function __construct(ListaService $listaService) {
+        $this->listaService = $listaService;
+    }
+
+
     public function index() {
-        $user = auth()->user();
-
-        // Simplificamos la lógica de roles
-        if ($user->esAdmin() || $user->esSupervisor()) {
-            $data = Lista::all();
-        } else {
-            $data = Lista::where('usuario_id', $user->id)->get();
-        }
-
+        $data = $this->listaService->obtenerListas(auth()->user());
         return $this->successResponse($data, 'Listas recuperadas correctamente');
     }
 
     public function store(Request $request) {
         $request->validate([
-            'nombre' => 'required|string|max:255',
-            'es_default' => 'boolean',
+            'nombre' => 'required|string|max:50'
         ]);
 
-        $lista = Lista::create([
-            'usuario_id' => auth()->id(),
-            'nombre'     => $request->nombre,
-            'es_default' => $request->es_default ?? false,
-        ]);
+        // Para que el admin pueda crear listas a su nombre
+        $usuarioId = auth()->user()->esAdmin()
+            ? ($request->usuario_id ?? auth()->id())
+            : auth()->id();
+
+        $lista = $this->listaService->crearNuevaLista([
+                    'usuario_id' => $usuarioId,
+                    'nombre'     => $request->nombre
+                ]);
 
         return $this->successResponse($lista, 'Lista creada con éxito', 201);
     }
 
     public function destroy($id) {
-        $lista = Lista::find($id);
+        $resultado = $this->listaService->eliminarLogic($id, auth()->user());
 
-        if (!$lista) {
-            return $this->errorResponse('Lista no encontrada', 404);
+        if (!$resultado['success']) {
+            return $this->errorResponse($resultado['message'], $resultado['code']);
         }
-
-        if ($lista->es_default) {
-            return $this->errorResponse('No puedes eliminar una lista del sistema', 403);
-        }
-
-        $lista->delete(); // Soft delete
 
         return $this->successResponse(null, 'Lista enviada a la papelera');
     }
 
     public function forceDelete($id) {
-        $lista = Lista::withTrashed()->find($id);
+        $exito = $this->listaService->eliminarDefinitivamente($id);
 
-        if (!$lista) {
+        if (!$exito) {
             return $this->errorResponse('Lista no encontrada', 404);
         }
-
-        $lista->forceDelete();
 
         return $this->successResponse(null, 'Lista eliminada definitivamente');
     }
 
     public function restore($id) {
-        $lista = Lista::withTrashed()->find($id);
+        $lista = $this->listaService->restaurar($id);
 
         if (!$lista) {
-            return $this->errorResponse('Lista no encontrada', 404);
+            return $this->errorResponse('Lista no encontrada o no pudo ser restaurada', 404);
         }
-
-        $lista->restore();
 
         return $this->successResponse($lista, 'Lista restaurada correctamente');
-    }
-
-    /**
-     * Crea listas por defecto
-     */
-    public function crearListasSistema($usuario) {
-        $listas = ['Favoritos', 'Leer más tarde'];
-
-        foreach ($listas as $nombre) {
-            Lista::create([
-                'usuario_id' => $usuario->id,
-                'nombre'     => $nombre,
-                'es_default' => true,
-            ]);
-        }
     }
 }

@@ -63,27 +63,19 @@ class OpenLibraryService {
     }
 
     public function getDescription(array $work, ?array $edition): ?string {
-        $desc = $work['description'] ?? null;
+        // La busco en edición primero
+        $desc = $edition['description'] ?? $work['description'] ?? null;
 
+        if (!$desc) {
+            return null;
+        }
+
+        // Reviso si está en value
         if (is_array($desc)) {
             $desc = $desc['value'] ?? null;
         }
 
-        if (!empty($desc)) {
-            return $desc;
-        }
-
-        if (!$edition) {
-            return null;
-        }
-
-        $edDesc = $edition['description'] ?? null;
-
-        if (is_array($edDesc)) {
-            $edDesc = $edDesc['value'] ?? null;
-        }
-
-        return $edDesc;
+        return $this->cleanDescription($desc);
     }
 
     public function resolveAuthors(array $work): array {
@@ -143,6 +135,49 @@ class OpenLibraryService {
 
     private function cleanKey(string $key): string {
         return str_replace('/works/', '', $key);
+    }
+
+    private function cleanDescription(?string $text): ?string {
+        if (!$text) {
+            return null;
+        }
+
+        // 1. CORTAR EL RUIDO: Si aparece el separador de Open Library o frases de relleno,
+        // tiramos todo lo que viene después.
+        $separadores = [
+            '/----------/i',
+            '/Also contained in:/i',
+            '/Contains:/i',
+            '/Source:/i'
+        ];
+
+        foreach ($separadores as $patron) {
+            $partes = preg_split($patron, $text);
+            $text = $partes[0]; // Nos quedamos solo con la primera parte
+        }
+
+        // 2. LIMPIAR ENLACES MARKDOWN:
+        // Convierte [Texto del enlace](url) en solo "Texto del enlace"
+        $text = preg_replace('/\[(.*?)\]\(.*?\)/', '$1', $text);
+
+        // 3. LIMPIAR CORCHETES SOLITARIOS:
+        // Quita cosas como [1], [2] o [edit] que sobran
+        $text = preg_replace('/\[.*?\]/', '', $text);
+
+        // 4. NORMALIZAR ESPACIOS Y SALTOS:
+        // Cambiamos todos los \r, \n y \t por un espacio simple
+        $text = str_replace(["\r", "\n", "\t"], ' ', $text);
+
+        // 5. COLAPSAR ESPACIOS DOBLES:
+        // Convierte "muchos     espacios" en "un espacio"
+        $text = preg_replace('/\s+/', ' ', $text);
+
+        // 6. LIMPIEZA FINAL
+        $text = trim($text);
+
+        // Opcional: Si después de limpiar queda un texto ridículamente corto (ej. " : "),
+        // mejor devolvemos null para no ensuciar la interfaz.
+        return (strlen($text) > 5) ? $text : null;
     }
 
 }
