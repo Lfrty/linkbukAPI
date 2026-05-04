@@ -28,24 +28,29 @@ class AuthController extends Controller {
                 'password.min' => 'La contraseña debe tener al menos 6 caracteres',
             ]);
 
-            // Transacción para que se den ambos casos o ninguno
-            $usuario = DB::transaction(function () use ($request, $listaService) {
-
-                // Crear usuario
-                $usuario = Usuario::create(['nombre'   => $request->nombre,
+            $data = DB::transaction(function () use ($request, $listaService) {
+                // 1. Crear usuario
+                $usuario = Usuario::create([
+                    'nombre'   => $request->nombre,
                     'email'    => $request->email,
-                    'password' => $request->password, // Se cifra en el modelo
-                    'rol_id' => 3, // Role de Usuario por defecto
+                    'password' => $request->password,
+                    'rol_id'   => 3,
                 ]);
 
-                // Crea listas por defecto
+                // 2. Crea listas por defecto
                 $listaService->crearListasNuevoUsuario($usuario->id);
-                return $usuario;
+
+                // 3. GENERAR TOKEN AQUÍ MISMO
+                $token = $usuario->createToken('api-token')->plainTextToken;
+
+                return [
+                    'user'  => new UsuarioResource($usuario),
+                    'token' => $token
+                ];
             });
 
-
-
-            return $this->successResponse($usuario, 'Usuario creado correctamente', 201);
+            // Devolvemos tanto el usuario como el token
+            return $this->successResponse($data, 'Usuario registrado y logueado correctamente', 201);
 
         } catch (ValidationException $e) {
             // Usamos el centralizador de errores
