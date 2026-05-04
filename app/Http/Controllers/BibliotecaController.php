@@ -32,32 +32,34 @@ class BibliotecaController extends Controller {
         // Uso firstOrCreate por si el usuario no tiene biblioteca aún
         $biblioteca = $user->biblioteca()->firstOrCreate(['usuario_id' => $user->id]);
 
-        // Compruebo si ya lo tiene para no duplicar
-        if ($biblioteca->libros()->where('libro_id', $request->libro_id)->exists()) {
-            return $this->errorResponse('Este libro ya está la biblioteca', 409);
-        }
-
         $estado = $request->estado_lectura;
         $fechaManual = $request->input('fecha_finalizacion');
+        $fechaFinal = ($estado === 'leido') ? ($fechaManual ?? now()) : null;
 
-        $fechaFinal = ($estado === 'leido')
-            ? ($fechaManual ?? now())
-            : null;
-
-        // Asociamos el libro a la biblioteca del usuario
-        $biblioteca->libros()->attach($request->libro_id, [
+        // Preparamos los datos de la tabla pivote
+        $datosPivote = [
             'estado_lectura' => $estado,
             'fecha_finalizacion' => $fechaFinal,
-            'created_at' => now(),
             'updated_at' => now(),
-        ]);
+        ];
 
-        return $this->successResponse(null, 'Libro añadido a tu biblioteca');
+        if ($biblioteca->libros()->where('libro_id', $request->libro_id)->exists()) {
+            // Si ya existe, actualizo estado
+            $biblioteca->libros()->updateExistingPivot($request->libro_id, $datosPivote);
+            $mensaje = 'Estado del libro actualizado';
+        } else {
+            // Si no existe, lo añado
+            $datosPivote['created_at'] = now();
+            $biblioteca->libros()->attach($request->libro_id, $datosPivote);
+            $mensaje = 'Libro añadido a tu biblioteca';
+        }
+
+        return $this->successResponse(null, $mensaje);
     }
 
     // Actualizar estado
     public function updateEstado(Request $request, $libroId) {
-        $biblioteca = $request->user()->biblioteca;
+        $biblioteca = $request->auth()->user()->biblioteca;
 
         $biblioteca->libros()->updateExistingPivot($libroId, [
             'estado_lectura' => $request->estado_lectura,

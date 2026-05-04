@@ -14,7 +14,6 @@ class ListaController extends Controller {
         $this->listaService = $listaService;
     }
 
-
     public function index() {
         $data = $this->listaService->obtenerListas(auth()->user());
         return $this->successResponse($data, 'Listas recuperadas correctamente');
@@ -36,6 +35,45 @@ class ListaController extends Controller {
                 ]);
 
         return $this->successResponse($lista, 'Lista creada con éxito', 201);
+    }
+
+    public function update(Request $request, $id) {
+        $request->validate([
+            'nombre' => 'sometimes|required|string|max:50'
+        ]);
+
+        $resultado = $this->listaService->actualizarLista($id, $request->only('nombre'), auth()->user());
+
+        if (!$resultado['success']) {
+            return $this->errorResponse($resultado['message'], $resultado['code']);
+        }
+
+        return $this->successResponse($resultado['data'], 'Lista actualizada correctamente');
+    }
+
+    public function addLibro(Request $request, $id) {
+        $request->validate([
+            'libro_id' => 'required|integer|exists:libros,id'
+        ]);
+
+        $resultado = $this->listaService->agregarLibroALista($id, $request->libro_id, auth()->user());
+
+        if (!$resultado['success']) {
+            return $this->errorResponse($resultado['message'], $resultado['code']);
+        }
+
+        return $this->successResponse(null, 'Libro añadido a la lista correctamente');
+    }
+
+    public function deleteLibro($id, $idLibro) {
+
+        $resultado = $this->listaService->quitarLibroDeLista($id, $idLibro, auth()->user());
+
+        if (!$resultado['success']) {
+            return $this->errorResponse($resultado['message'], $resultado['code']);
+        }
+
+        return $this->successResponse(null, 'Libro eliminado de la lista correctamente');
     }
 
     public function destroy($id) {

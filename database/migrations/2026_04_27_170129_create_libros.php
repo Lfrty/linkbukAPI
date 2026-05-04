@@ -13,15 +13,18 @@ return new class () extends Migration {
             $table->id();
 
             $table->string('titulo');
+
+            $table->string('work_key')->unique();
+
             $table->string('autor')->nullable();
 
-            $table->string('isbn')->nullable()->unique();
-
-            $table->string('editorial')->nullable();
-            $table->date('fecha_publicacion')->nullable();
+            $table->integer('anyo_publicacion')->nullable();
 
             $table->text('descripcion')->nullable();
+
             $table->string('portada')->nullable();
+
+            $table->integer('paginas')->nullable()->unique();
 
             $table->timestamps();
         });

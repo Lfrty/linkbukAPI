@@ -17,6 +17,8 @@ class Usuario extends Authenticatable {
     // Nombre tablac
     protected $table = 'usuarios';
 
+    protected $appends = ['rol_name'];
+
     protected $fillable = [
         'nombre',
         'email',
@@ -42,7 +44,15 @@ class Usuario extends Authenticatable {
         'biografia' => '-',
     ];
 
-    // COnvierte a bool
+    public function getRolNameAttribute() {
+        return match($this->rol_id) {
+            1 => 'admin',
+            2 => 'supervisor',
+            default => 'usuario',
+        };
+    }
+
+    // Convierte a bool
     protected $casts = [
         'permitir_desconocidos' => 'boolean',
         'password' => 'hashed' //Aquí la cifra

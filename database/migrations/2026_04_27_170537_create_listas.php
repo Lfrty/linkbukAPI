@@ -12,9 +12,11 @@ return new class () extends Migration {
         Schema::create('listas', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('user_id')->constrained('usuarios');
+            $table->foreignId('usuario_id')->constrained('usuarios');
 
             $table->string('nombre');
+
+            $table->boolean('es_default')->default(false);
 
             $table->timestamps();
         });

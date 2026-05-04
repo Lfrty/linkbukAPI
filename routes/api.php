@@ -48,7 +48,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::post('biblioteca/nuevo', [BibliotecaController::class, 'addLibro']);
 
-    Route::post('biblioteca/estadoLibro', [BibliotecaController::class, 'updateEstado']);
+    Route::post('biblioteca/estadoLibro/{libroId}', [BibliotecaController::class, 'updateEstado']);
 
     Route::delete('biblioteca', [BibliotecaController::class, 'deleteLibro']);
 
@@ -63,10 +63,13 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::delete('/listas/{id}', [ListaController::class, 'destroy']); // soft delete
 
-    // Para Administracion
-    Route::delete('/listas/{id}/force', [ListaController::class, 'forceDelete']);
+    // Metadatos de la lista
+    Route::put('listas/{id}', [ListaController::class, 'update']);
 
-    Route::post('/listas/{id}/restore', [ListaController::class, 'restore']);
+    // Lista respecto a libros
+    Route::delete('listas/{id}/libros/{libro_id}', [ListaController::class, 'deleteLibro']);
+
+    Route::post('/listas/{id}/addLibro', [ListaController::class, 'addLibro']);
 
     /**
      * Reseñas
@@ -77,5 +80,15 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::delete('/resenas/{id}', [ResenasController::class, 'destroy']); // soft delete
 
+    // --- RUTAS DE ADMINISTRACIÓN Y SUPERVISIÓN ---
+
+    // Solo Admin
+    Route::middleware('checkRol:admin')->group(function () {
+        Route::delete('/listas/{id}/force', [ListaController::class, 'forceDelete']);
+    });
+
+    Route::middleware('checkRol:admin')->group(function () {
+        Route::post('/listas/{id}/restore', [ListaController::class, 'restore']);
+    });
 
 });

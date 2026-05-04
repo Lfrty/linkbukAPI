@@ -32,4 +32,8 @@ class Lista extends Model {
             'libro_id'
         );
     }
+
+    public function listas() {
+        return $this->belongsToMany(Lista::class, 'lista_libro', 'libro_id', 'lista_id');
+    }
 }

@@ -20,7 +20,7 @@ return new class () extends Migration {
             $table->string('ubicacion')->nullable();
             $table->string('foto_perfil')->nullable();
 
-            $table->boolean('permitir_mensajes_desconocidos')->default(true);
+            $table->boolean('permitir_desconocidos')->default(true);
 
             $table->foreignId('rol_id')->nullable()->constrained('roles');
 

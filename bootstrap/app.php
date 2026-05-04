@@ -18,7 +18,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Captura como un 401 para cuando no hay Auth.
         $middleware->redirectGuestsTo(fn () => null);
 
-        $middleware->statefulApi();
+        $middleware->alias([
+            'checkRol' => \App\Http\Middleware\CheckRol::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
 
