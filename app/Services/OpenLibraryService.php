@@ -10,9 +10,10 @@ class OpenLibraryService {
 
     private const ENDPOINT_WORKS = '/works/';
     private const ENDPOINT_SEARCH = '/search.json';
+    private const BASE_URL = 'https://openlibrary.org';
 
     public function __construct() {
-        $this->baseUrl = config('services.book_archive.url');
+        $this->baseUrl = self::BASE_URL;
     }
 
     // Buscar por título
