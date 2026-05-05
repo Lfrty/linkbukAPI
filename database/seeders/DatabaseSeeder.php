@@ -12,8 +12,7 @@ class DatabaseSeeder extends Seeder {
             UsuariosSeeder::class,
             LibrosSeeder::class,
             BibliotecasSeeder::class,
-            ListasSeeder::class,
-            ForoSeeder::class,
+            ListasSeeder::class
         ]);
     }
 }

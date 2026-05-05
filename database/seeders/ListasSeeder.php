@@ -13,11 +13,11 @@ class ListasSeeder extends Seeder {
     public function run(): void {
         DB::table('listas')->insert([
             [
-                'user_id' => 2,
+                'usuario_id' => 2,
                 'nombre' => 'Favoritos'
             ],
             [
-                'user_id' => 3,
+                'usuario_id' => 3,
                 'nombre' => 'Pendientes'
             ],
         ]);

@@ -12,8 +12,8 @@ class BibliotecasSeeder extends Seeder {
      */
     public function run(): void {
         DB::table('bibliotecas')->insert([
-            ['user_id' => 2],
-            ['user_id' => 3],
+            ['usuario_id' => 2],
+            ['usuario_id' => 3],
         ]);
 
         DB::table('biblioteca_libro')->insert([

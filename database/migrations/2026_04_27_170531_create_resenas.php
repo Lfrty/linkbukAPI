@@ -12,7 +12,7 @@ return new class () extends Migration {
         Schema::create('resenas', function (Blueprint $table) {
             $table->id();
 
-            $table->foreignId('user_id')->constrained('usuarios');
+            $table->foreignId('usuario_id')->constrained('usuarios');
             $table->foreignId('libro_id')->constrained()->cascadeOnDelete();
 
             $table->integer('puntuacion');
@@ -20,7 +20,7 @@ return new class () extends Migration {
 
             $table->timestamps();
 
-            $table->unique(['user_id', 'libro_id']);
+            $table->unique(['usuario_id', 'libro_id']);
         });
     }
 

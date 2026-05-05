@@ -16,7 +16,7 @@ class UsuariosSeeder extends Seeder {
                 'biografia' => 'Administrador del sistema',
                 'ubicacion' => 'Madrid',
                 'foto_perfil' => 'admin.jpg',
-                'permitir_mensajes_desconocidos' => 1,
+                'permitir_desconocidos' => 1,
                 'rol_id' => 1
             ],
             [
@@ -26,7 +26,7 @@ class UsuariosSeeder extends Seeder {
                 'biografia' => 'Control de contenido',
                 'ubicacion' => 'Barcelona',
                 'foto_perfil' => 'super.jpg',
-                'permitir_mensajes_desconocidos' => 1,
+                'permitir_desconocidos' => 1,
                 'rol_id' => 2
             ],
             [
@@ -36,7 +36,7 @@ class UsuariosSeeder extends Seeder {
                 'biografia' => 'Amante de la lectura',
                 'ubicacion' => 'Valencia',
                 'foto_perfil' => 'u1.jpg',
-                'permitir_mensajes_desconocidos' => 1,
+                'permitir_desconocidos' => 1,
                 'rol_id' => 3
             ],
             [
@@ -46,7 +46,7 @@ class UsuariosSeeder extends Seeder {
                 'biografia' => 'Fan de ciencia ficción',
                 'ubicacion' => 'Sevilla',
                 'foto_perfil' => 'u2.jpg',
-                'permitir_mensajes_desconocidos' => 0,
+                'permitir_desconocidos' => 0,
                 'rol_id' => 3
             ],
             [
@@ -56,7 +56,7 @@ class UsuariosSeeder extends Seeder {
                 'biografia' => 'Lector casual',
                 'ubicacion' => 'Bilbao',
                 'foto_perfil' => 'u3.jpg',
-                'permitir_mensajes_desconocidos' => 1,
+                'permitir_desconocidos' => 1,
                 'rol_id' => 3
             ],
         ]);
