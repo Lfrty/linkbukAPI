@@ -3,14 +3,14 @@
 namespace App\Services;
 
 use App\Models\Lista;
-use Illuminate\Support\Facades\DB;
+use App\Models\Usuario;
 
 class ListaService {
     /**
      * Obtiene las listas según el rol del usuario
      */
-    public function obtenerListas($user) {
-        return Lista::where('usuario_id', $user->id)
+    public function obtenerListas(Usuario $user) {
+        return Lista::query()->where('usuario_id', $user->id)
             ->withCount('libros')
             ->with(['libros'])
             ->get();
@@ -29,9 +29,9 @@ class ListaService {
     /**
      * Añade un libro a una lista específica
      */
-    public function agregarLibroALista($listaId, $libroId, $user) {
+    public function agregarLibroALista(int $listaId, int $libroId, Usuario $user) {
         // Buscamos la lista asegurándonos de que pertenezca al usuario
-        $lista = Lista::where('id', $listaId)
+        $lista = Lista::query()->where('id', $listaId)
                     ->where('usuario_id', $user->id)
                     ->first();
 
@@ -45,8 +45,8 @@ class ListaService {
         return ['success' => true];
     }
 
-    public function quitarLibroDeLista($listaId, $libroId, $usuario) {
-        $lista = Lista::find($listaId);
+    public function quitarLibroDeLista(int $listaId, int $libroId, Usuario $usuario) {
+        $lista = Lista::query()->find($listaId);
 
         if (!$lista) {
             return ['success' => false, 'message' => 'Lista no encontrada', 'code' => 404];
@@ -63,8 +63,8 @@ class ListaService {
         return ['success' => true];
     }
 
-    public function actualizarLista($id, array $datos, $usuario) {
-        $lista = Lista::find($id);
+    public function actualizarLista(int $id, array $datos, Usuario $usuario) {
+        $lista = Lista::query()->find($id);
 
         if (!$lista) {
             return ['success' => false, 'message' => 'Lista no encontrada', 'code' => 404];
@@ -89,7 +89,7 @@ class ListaService {
     /**
      * Crea las listas iniciales para un nuevo usuario
      */
-    public function crearListasNuevoUsuario($usuarioId) {
+    public function crearListasNuevoUsuario(int $usuarioId) {
         $listas = [
             ['nombre' => 'Favoritos', 'es_default' => true],
             ['nombre' => 'Leer más tarde', 'es_default' => true],
@@ -107,7 +107,7 @@ class ListaService {
     /**
      * Eliminado lógico
      */
-    public function eliminarLogic($id, $user) {
+    public function eliminarLogic(int $id, Usuario $user) {
         $lista = $user->listas()->find($id);
 
         if (!$lista) {
@@ -125,7 +125,7 @@ class ListaService {
     /**
      * Restaurar una lista
      */
-    public function restaurar($id) {
+    public function restaurar(int $id) {
         $lista = Lista::withTrashed()->find($id);
 
         if ($lista) {
@@ -139,7 +139,7 @@ class ListaService {
     /**
      * Eliminar
      */
-    public function eliminarDefinitivamente($id) {
+    public function eliminarDefinitivamente(int $id) {
         $lista = Lista::withTrashed()->find($id);
 
         if ($lista) {

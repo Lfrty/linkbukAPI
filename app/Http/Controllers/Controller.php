@@ -14,10 +14,11 @@ abstract class Controller extends BaseController {
     // OK
     protected function successResponse($data, string $message = 'Operación exitosa', int $code = 200): JsonResponse {
         return response()->json([
-            'ok'      => true,
-            'message' => $message,
-            'data'    => $data,
-        ], $code);
+         'ok'      => true,
+         'message' => $message,
+         'data'    => $data,
+         'errors'  => null // Para mantener la estructura que espero en el Front
+        ]);
     }
 
     /**
@@ -27,7 +28,8 @@ abstract class Controller extends BaseController {
         return response()->json([
             'ok'      => false,
             'message' => $message,
+            'data' => null,
             'errors'  => $errors,
-        ], $code);
+        ]);
     }
 }

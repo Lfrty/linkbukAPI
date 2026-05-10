@@ -25,7 +25,7 @@ class Libro extends Model {
     }
 
     public function bibliotecas() {
-        return $this->belongsToMany(Biblioteca::class, 'biblioteca_libro') 
+        return $this->belongsToMany(Biblioteca::class, 'biblioteca_libro')
                     ->withPivot('estado_lectura', 'fecha_finalizacion')
                     ->withTimestamps();
     }
