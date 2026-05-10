@@ -1,12 +1,16 @@
 <?php
 
-use App\Http\Controllers\AuthController;
+
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\ListaController;
 use App\Http\Controllers\LibroController;
 use App\Http\Controllers\BibliotecaController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ResenasController;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\UserController;
 
 Route::get('/test', function () {
     return response()->json(['ok' => true]);
@@ -15,10 +19,10 @@ Route::get('/test', function () {
 // Opciones Usuario
 
 // Registro
-Route::post('/auth/registrar', [AuthController::class, 'registrar']);
+Route::post('/auth/registrar', [RegisterController::class, 'registrar']);
 
 // Login
-Route::post('/auth/login', [AuthController::class, 'login']);
+Route::post('/auth/login', [LoginController::class, 'login']);
 
 // Buscar libro
 Route::get('/libros/search', [LibroController::class, 'search']);
@@ -33,17 +37,17 @@ Route::middleware('auth:sanctum')->group(function () {
      * Usuario
      */
     // Cerrar sesión
-    Route::post('/auth/logout', [AuthController::class, 'logout']);
+    Route::post('/auth/logout', [UserController::class, 'logout']);
 
     // Get Perfil
-    Route::get('/user', fn (Request $request) => $request->user());
+    Route::get('/user', fn () => Auth::user());
 
     // Editar perfil
-    Route::put('/user', [AuthController::class, 'edit']);
+    Route::put('/user', [ProfileController::class, 'editarPerfil']);
+
     /**
      * Biblioteca usuario
      */
-
     Route::get('/biblioteca', [BibliotecaController::class, 'index']);
 
     Route::post('biblioteca/nuevo', [BibliotecaController::class, 'addLibro']);
@@ -82,7 +86,46 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // --- RUTAS DE ADMINISTRACIÓN Y SUPERVISIÓN ---
 
-    // Solo Admin
+    /**
+     * Usuarios
+     */
+
+    // Obtener todos
+    Route::middleware('checkRol:admin, supervisor')->group(function () {
+        Route::get('/admin/usuarios/all', [UserController::class, 'obtenerLista']);
+    });
+
+    // Obtener un usuario
+    Route::middleware('checkRol:admin, supervisor')->group(function () {
+        Route::get('/admin/usuarios/{id}', [UserController::class, 'obtenerUsuario']);
+    });
+
+    /**
+     * Solo Admin
+     */
+
+    // Crear Usuario
+    Route::middleware('checkRol:admin')->group(function () {
+        Route::post('/admin/usuarios', [UserController::class, 'crearUsuario']);
+    });
+
+
+    // Editar Usuario
+    Route::middleware('checkRol:admin')->group(function () {
+        Route::post('/admin/usuarios/edit', [UserController::class, 'editarPerfil']);
+    });
+
+    // Borrar Usuario
+    Route::middleware('checkRol:admin')->group(function () {
+        Route::delete('/admin/usuarios/borrar/{id}', [UserController::class, 'borrar']);
+    });
+
+
+    // Eliminar Usuario deinitivamente
+    Route::middleware('checkRol:admin')->group(function () {
+        Route::get('/admin/usuarios/destruir/{id}', [UserController::class, 'destruir']);
+    });
+
     Route::middleware('checkRol:admin')->group(function () {
         Route::delete('/listas/{id}/force', [ListaController::class, 'forceDelete']);
     });

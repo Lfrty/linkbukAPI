@@ -8,8 +8,14 @@ use Illuminate\Http\Client\Pool;
 class OpenLibraryService {
     private string $baseUrl;
 
+
+    private const MAX_TIMEOUT = 10; //Segundos espera
+    private const NUM_RETRY = 2;
+    private const RETRY_DELAY = 100; // Milisegundos
+
     private const ENDPOINT_WORKS = '/works/';
     private const ENDPOINT_SEARCH = '/search.json';
+
     private const BASE_URL = 'https://openlibrary.org';
 
     public function __construct() {
@@ -18,8 +24,8 @@ class OpenLibraryService {
 
     // Buscar por título
     public function search(string $query, int $limit = 10) {
-        $response = Http::timeout(5) // Máximo 5 segundos esperando
-        ->retry(2, 100)        // Si falla, reintenta 2 veces con 100ms de margen
+        $response = Http::timeout(self::MAX_TIMEOUT)
+        ->retry(self::NUM_RETRY, self::RETRY_DELAY)
         ->get($this->baseUrl . self::ENDPOINT_SEARCH, [
             'q' => $query,
             'limit' => $limit,

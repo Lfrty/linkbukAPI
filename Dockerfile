@@ -64,4 +64,4 @@ RUN mkdir -p \
 
 EXPOSE 80
 
-CMD ["apache2-foreground"]
+CMD php artisan migrate --force --seed && php artisan serve --host 0.0.0.0 --port 10000
