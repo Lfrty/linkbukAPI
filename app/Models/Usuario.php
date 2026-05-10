@@ -2,19 +2,20 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Laravel\Sanctum\HasApiTokens;
 
 class Usuario extends Authenticatable {
     use HasApiTokens;
     use HasFactory;
     use Notifiable;
+    use softDeletes;
 
-    // Nombre tablac
+    // Nombre tabla
     protected $table = 'usuarios';
 
     protected $appends = ['rol_name'];
@@ -27,15 +28,15 @@ class Usuario extends Authenticatable {
         'ubicacion',
         'foto_perfil',
         'permitir_desconocidos',
-        'rol_id',
+        'rol_id'
     ];
 
     // Contraseña protegida al exportar
     protected $hidden = [
         'password',
-        'remember_token',
         'created_at',
-        'updated_at'
+        'updated_at',
+        'deleted_at'
     ];
 
     // Por defecto se crea a true
@@ -55,7 +56,7 @@ class Usuario extends Authenticatable {
     // Convierte a bool
     protected $casts = [
         'permitir_desconocidos' => 'boolean',
-        'password' => 'hashed' //Aquí la cifra
+        'password' => 'hashed'
     ];
 
     // RELACIÓN Roles

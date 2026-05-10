@@ -19,10 +19,7 @@ class UsuarioResource extends JsonResource {
             'biografia'   => $this->biografia === '-' ? 'Sin biografía' : $this->biografia,
             'ubicacion'   => $this->ubicacion ?? 'No especificada',
             'foto_perfil' => $this->foto_perfil,
-            'ajustes'     => [
-                'permitir_desconocidos' => (bool)$this->permitir_desconocidos,
-            ],
-            'rol_id'      => $this->rol_id,
+            'permitir_desconocidos' => (bool)$this->permitir_desconocidos,
             'rol_nombre'  => $this->rol->nombre ?? 'Usuario',
         ];
     }
